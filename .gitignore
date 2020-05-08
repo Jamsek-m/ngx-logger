@@ -47,3 +47,4 @@ Thumbs.db
 
 .idea/
 *.iml
+projects/log-server/node_modules/

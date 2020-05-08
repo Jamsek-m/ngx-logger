@@ -1,5 +1,5 @@
 {
-    "name": "ngx-logger",
+    "name": "@mjamsek/ngx-logger",
     "version": "0.0.1",
     "peerDependencies": {
         "@angular/common": "^9.1.4",
