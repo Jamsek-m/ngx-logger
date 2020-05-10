@@ -5,6 +5,8 @@ import { AppComponent } from "./app.component";
 import { AppInitFactory } from "./factories";
 import { Logger } from "../../projects/ngx-logger/src/public-api";
 import { HttpClient, HttpClientModule } from "@angular/common/http";
+import { RouterModule } from "@angular/router";
+import { TracingService } from "../../projects/ngx-logger/src/lib/tracing.service";
 
 @NgModule({
     declarations: [
@@ -12,10 +14,11 @@ import { HttpClient, HttpClientModule } from "@angular/common/http";
     ],
     imports: [
         BrowserModule,
-        HttpClientModule
+        HttpClientModule,
+        RouterModule.forRoot([])
     ],
     providers: [
-        {provide: APP_INITIALIZER, useFactory: AppInitFactory, multi: true, deps: [Logger, HttpClient]}
+        {provide: APP_INITIALIZER, useFactory: AppInitFactory, multi: true, deps: [Logger, TracingService, HttpClient]}
     ],
     bootstrap: [AppComponent]
 })

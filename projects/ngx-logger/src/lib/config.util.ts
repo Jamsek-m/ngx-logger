@@ -46,7 +46,7 @@ export function overrideWithDefaults(config: LoggerConfiguration): LoggerConfigu
         } else {
             // If no console logger is specified, create default one
             config.loggers.console = {
-                level: "INFO",
+                level: config.level,
                 disabled: false
             };
         }
@@ -61,7 +61,7 @@ export function overrideWithDefaults(config: LoggerConfiguration): LoggerConfigu
     } else {
         config.loggers = {
             console: {
-                level: "INFO",
+                level: config.level,
                 disabled: false
             }
         };

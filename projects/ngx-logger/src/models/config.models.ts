@@ -12,6 +12,7 @@ export interface LogUrlProviderConfiguration extends LogAppenderConfiguration {
 
 export interface HttpProviderConfiguration extends LogUrlProviderConfiguration {
     httpClient: HttpClient;
+    sessionInitializationUrl: string;
 }
 
 export interface SupportedLoggers {
@@ -23,5 +24,6 @@ export interface SupportedLoggers {
 export interface LoggerConfiguration {
     level?: LogLevelString;
     disabled?: boolean;
+    tracingEnabled?: boolean;
     loggers?: SupportedLoggers;
 }

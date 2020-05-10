@@ -29,7 +29,6 @@ export class WebsocketLogger implements ILogger {
                 this.socket$.subscribe((message: any) => {
                     if (message.type === "SESSION_START") {
                         this.sessionId = message.message.sessionId;
-                        console.log("Sess id", this.sessionId);
                         resolve();
                     }
                 }, err => {

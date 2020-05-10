@@ -1,17 +1,20 @@
-export type LogLevelString = "FINE" | "DEBUG" | "INFO" | "WARN" | "ERROR";
+export type LogLevelString = "TRACE" | "FINE" | "DEBUG" | "INFO" | "WARN" | "ERROR";
 
 
 export enum LogLevel {
-    FINE = 1000,
-    DEBUG = 2000,
-    INFO = 3000,
-    WARN = 4000,
-    ERROR = 5000
+    TRACE = 1000,
+    FINE = 2000,
+    DEBUG = 3000,
+    INFO = 4000,
+    WARN = 5000,
+    ERROR = 6000
 }
 
 export namespace LogLevelEnum {
     export function toString(level: LogLevel): LogLevelString {
         switch (level) {
+            case LogLevel.TRACE:
+                return "TRACE";
             case LogLevel.FINE:
                 return "FINE";
             case LogLevel.DEBUG:

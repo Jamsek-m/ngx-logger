@@ -1,9 +1,10 @@
-import { Injectable } from "@angular/core";
+import { Injectable, Optional } from "@angular/core";
 import { LogLevel, LogLevelEnum } from "../models/logger.models";
 import { LoggerConfiguration } from "../models/config.models";
 import { formatDate } from "./date.util";
 import { overrideWithDefaults } from "./config.util";
 import { Configuration } from "./configuration";
+import { Router, RouterEvent } from "@angular/router";
 
 
 @Injectable({
@@ -17,7 +18,7 @@ export class Logger {
 
     private config: Configuration = null;
 
-    constructor() {
+    constructor(@Optional() private router: Router) {
     }
 
     public async initialize(config?: LoggerConfiguration): Promise<void> {
@@ -25,7 +26,23 @@ export class Logger {
         if (config.disabled) {
             return;
         }
-        this.config = await Configuration.create(config);
+        try {
+            this.config = await Configuration.create(config);
+        } catch (err) {
+            // TODO: better handle error
+            console.error(err);
+        }
+
+        if (this.config && this.config.tracingEnabled) {
+            if (!this.router) {
+                console.error("Tracing requires registered RouterModule!");
+            } else {
+                this.router.events.subscribe((event: RouterEvent) => {
+                    // TODO: trace router events
+                    // console.log(event);
+                });
+            }
+        }
     }
 
     public getLogLevel(): LogLevel {
@@ -42,6 +59,12 @@ export class Logger {
                 await logger.log(level, formattedMessage);
             })
         );
+    }
+
+    public trace(message: string, loggerName?: string): Promise<void[]> {
+        if (this.getLogLevel() <= LogLevel.TRACE) {
+            return this.log(LogLevel.TRACE, message, loggerName);
+        }
     }
 
     public fine(message: string, loggerName?: string): Promise<void[]> {

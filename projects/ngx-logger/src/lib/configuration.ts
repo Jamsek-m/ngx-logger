@@ -33,14 +33,20 @@ export class Configuration {
 
     private _logLevel: LogLevel;
     private _registeredLoggers: ILogger[] = [];
+    private _tracingEnabled: boolean;
 
     public static async create(config: LoggerConfiguration): Promise<Configuration> {
         return new Promise(async (resolve, reject) => {
             const configuration = new Configuration();
             configuration.logLevel = getLogLevel(config.level);
+            configuration.tracingEnabled = !!config.tracingEnabled;
             if (!config.disabled) {
-                await configuration.initLoggers(config);
-                resolve();
+                try {
+                    await configuration.initLoggers(config);
+                    resolve(configuration);
+                } catch (err) {
+                    reject(err);
+                }
             }
         });
     }
@@ -56,36 +62,6 @@ export class Configuration {
                 reject(e);
             }
         });
-
-        /*if (config.loggers.console && !config.loggers.console.disabled) {
-            const consoleLogger = new ConsoleLogger();
-            const consoleConfig = new AppenderConfiguration(config.loggers.console, config);
-            consoleLogger.initialize(consoleConfig, config).then(() => {
-                this._registeredLoggers.push(consoleLogger);
-            }).catch(err => {
-                console.error("[ngx-logger] " + err.message);
-            });
-        }
-
-        if (config.loggers.http && !config.loggers.http.disabled) {
-            const httpLogger = new HttpLogger();
-            const httpConfig = new AppenderConfiguration(config.loggers.http, config);
-            httpLogger.initialize(httpConfig, config).then(() => {
-                this._registeredLoggers.push(httpLogger);
-            }).catch(err => {
-                console.error("[ngx-logger] " + err.message);
-            });
-        }
-
-        if (config.loggers.websocket && !config.loggers.websocket.disabled) {
-            const websocketLogger = new WebsocketLogger();
-            const websocketConfig = new AppenderConfiguration(config.loggers.websocket, config);
-            websocketLogger.initialize(websocketConfig, config).then(() => {
-                this._registeredLoggers.push(websocketLogger);
-            }).catch(err => {
-                console.error("[ngx-logger] " + err.message);
-            });
-        }*/
     }
 
     private async initLogger(loggerType: string, config: LoggerConfiguration): Promise<void> {
@@ -123,4 +99,11 @@ export class Configuration {
         this._registeredLoggers = loggers;
     }
 
+    public get tracingEnabled(): boolean {
+        return this._tracingEnabled;
+    }
+
+    public set tracingEnabled(value: boolean) {
+        this._tracingEnabled = value;
+    }
 }

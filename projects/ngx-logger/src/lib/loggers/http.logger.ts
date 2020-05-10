@@ -9,17 +9,24 @@ export class HttpLogger implements ILogger {
 
     private config: AppenderConfiguration;
     private connectionUrl: string = null;
+    private sessionInitializationUrl: string = null;
     private httpClient: HttpClient = null;
     private sessionId: string = null;
 
     initialize(config: AppenderConfiguration, globalConfig: LoggerConfiguration): Promise<void> {
-        return new Promise<void>((resolve, reject) => {
+        return new Promise<void>(async (resolve, reject) => {
             this.config = config;
 
             if (!globalConfig.loggers.http.connectionUrl) {
                 reject(new Error("HttpLogger needs connection URL!"));
             } else {
                 this.connectionUrl = globalConfig.loggers.http.connectionUrl;
+            }
+
+            if (!globalConfig.loggers.http.sessionInitializationUrl) {
+                reject(new Error("HttpLogger needs session initialization URL!"));
+            } else {
+                this.sessionInitializationUrl = globalConfig.loggers.http.sessionInitializationUrl;
             }
 
             if (!globalConfig.loggers.http.httpClient) {
@@ -29,7 +36,26 @@ export class HttpLogger implements ILogger {
             } else {
                 this.httpClient = globalConfig.loggers.http.httpClient;
             }
+
+            try {
+                this.sessionId = await this.getSessionId();
+            } catch (err) {
+                reject(err);
+            }
+
             resolve();
+        });
+    }
+
+    private getSessionId(): Promise<string> {
+        return new Promise<string>((resolve, reject) => {
+            this.httpClient.get(this.sessionInitializationUrl, {observe: "response"}).subscribe(
+                (res: HttpResponse<any>) => {
+                    resolve(res.headers.get("X-Session-Id"));
+                }, (err: HttpErrorResponse) => {
+                    reject(err);
+                }
+            );
         });
     }
 
@@ -37,15 +63,13 @@ export class HttpLogger implements ILogger {
         if (this.config.logLevel <= level && !this.config.disabled) {
             return new Promise<void>(resolve => {
                 // TODO: Define more in detail request body
+                const headers = new HttpHeaders({
+                    "X-Session-Id": this.sessionId
+                });
 
-                const headers = new HttpHeaders();
-                if (this.sessionId !== null) {
-                    headers.set("X-Session-Id", this.sessionId);
-                }
                 this.httpClient
                     .post(this.connectionUrl, HttpMessage.create(message), {observe: "response", headers})
                     .subscribe((res: HttpResponse<any>) => {
-                        this.sessionId = res.headers.get("X-Session-Id");
                         resolve();
                     }, (err: HttpErrorResponse) => {
                         // silent fail on error

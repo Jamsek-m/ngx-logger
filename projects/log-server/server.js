@@ -9,17 +9,19 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({extended: false}));
 app.use(cookieParser());
-app.use(cors());
+app.use(cors({
+    exposedHeaders: "X-Session-Id"
+}));
 app.disable("x-powered-by");
 
+app.get("/session", (req, res) => {
+    console.log("Starting session with id 123");
+    res.status(204).header("X-Session-Id", 123).send();
+});
+
 app.post("/logs", (req, res) => {
-    let sessionId = req.header("X-Session-Id");
-    if (!sessionId) {
-        // Session has not yet been started, generate new id.
-        sessionId = 123;
-    }
-    // console.log(`Session ${sessionId}:`, req.body);
-    console.log(`REST endpoint:`, req.body);
+    const sessionId = req.header("X-Session-Id");
+    console.log(`REST endpoint:`, req.body, {sessionId: sessionId});
     res.status(200).header("X-Session-Id", sessionId).json({msg: "Log saved!"});
 });
 
